@@ -26,8 +26,8 @@ func NewClient(config *Config) *Client {
 	}
 }
 
-func (c *Client) FetchCompletion(prompt string, stream bool) error {
-	req, err := marshalRequest(prompt, c, stream)
+func (c *Client) FetchCompletion(prompt string, stream bool, tokens int, model string) error {
+	req, err := marshalRequest(prompt, c, stream, tokens, model)
 	if err != nil {
 		return err
 	}
@@ -113,9 +113,9 @@ func parseStreamingResponse(resp *http.Response) error {
 	return nil
 }
 
-func marshalRequest(prompt string, c *Client, stream bool) (*http.Request, error) {
+func marshalRequest(prompt string, c *Client, stream bool, tokens int, model string) (*http.Request, error) {
 	payload := map[string]interface{}{
-		"max_tokens": 1024,
+		"max_tokens": tokens,
 		"messages": []map[string]interface{}{
 			{
 				"role":    "user",
@@ -123,7 +123,7 @@ func marshalRequest(prompt string, c *Client, stream bool) (*http.Request, error
 			},
 		},
 		"stream": stream,
-		"model":  "claude-3-sonnet-20240229",
+		"model":  model,
 	}
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
