@@ -19,9 +19,8 @@ var askCmd = &cobra.Command{
 }
 
 func init() {
-	askCmd.PersistentFlags().StringVarP(&model, "model", "m", "claude-3-sonnet-20240229", "Model that responds to the prompt. "+
-		"Defaults to 'claude-3-sonnet-20240229'")
-	askCmd.PersistentFlags().BoolVarP(&stream, "stream", "s", false, "Stream the response")
-	askCmd.PersistentFlags().IntVarP(&tokens, "tokens", "t", 1024, "Maximum number of tokens preferred in the output")
+	askCmd.Flags().StringVarP(&model, "model", "m", "claude-3-sonnet-20240229", "Model that responds to the prompt")
+	askCmd.Flags().BoolVarP(&stream, "stream", "s", false, "Stream the response")
+	askCmd.Flags().IntVarP(&tokens, "tokens", "t", 1024, "Maximum number of tokens preferred in the output")
 	rootCmd.AddCommand(askCmd)
 }
