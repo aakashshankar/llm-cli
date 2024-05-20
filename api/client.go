@@ -6,14 +6,15 @@ import (
 	"os"
 )
 
-func PromptClaude(prompt string, stream bool, tokens int, model string) {
+func PromptClaude(prompt string, stream bool, tokens int, model string, system string) {
+
 	anthropicConfig, err := anthropic.LoadConfig()
 	if err != nil {
 		fmt.Println("Error loading config:", err)
 		os.Exit(1)
 	}
 	anthropicClient := anthropic.NewClient(anthropicConfig)
-	err = anthropicClient.FetchCompletion(prompt, stream, tokens, model)
+	err = anthropicClient.FetchCompletion(prompt, stream, tokens, model, system)
 	if err != nil {
 		fmt.Println("Error fetching completion:", err)
 		os.Exit(1)

@@ -23,3 +23,25 @@ type CompletionResponse struct {
 	Type         string        `json:"type"`
 	Usage        Usage         `json:"usage"`
 }
+
+type Message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+type Metadata struct {
+	UserId string `json:"user_id"`
+}
+
+type CompletionRequest struct {
+	Model         string    `json:"model"`
+	Messages      []Message `json:"messages"`
+	MaxTokens     int       `json:"max_tokens"`
+	Metadata      Metadata  `json:"metadata"`
+	Stream        bool      `json:"stream"`
+	StopSequences []string  `json:"stop_sequences"`
+	System        string    `json:"system"`
+	Temperature   float64   `json:"temperature"`
+	TopK          int       `json:"top_k"`
+	TopP          float64   `json:"top_p"`
+}

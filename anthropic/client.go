@@ -26,8 +26,8 @@ func NewClient(config *Config) *Client {
 	}
 }
 
-func (c *Client) FetchCompletion(prompt string, stream bool, tokens int, model string) error {
-	req, err := marshalRequest(prompt, c, stream, tokens, model)
+func (c *Client) FetchCompletion(prompt string, stream bool, tokens int, model string, system string) error {
+	req, err := marshalRequest(prompt, c, stream, tokens, model, system)
 	if err != nil {
 		return err
 	}
@@ -113,18 +113,15 @@ func parseStreamingResponse(resp *http.Response) error {
 	return nil
 }
 
-func marshalRequest(prompt string, c *Client, stream bool, tokens int, model string) (*http.Request, error) {
-	payload := map[string]interface{}{
-		"max_tokens": tokens,
-		"messages": []map[string]interface{}{
-			{
-				"role":    "user",
-				"content": prompt,
-			},
-		},
-		"stream": stream,
-		"model":  model,
+func marshalRequest(prompt string, c *Client, stream bool, tokens int, model string, system string) (*http.Request, error) {
+	payload := CompletionRequest{
+		Model:     model,
+		Messages:  []Message{{Role: "user", Content: prompt}},
+		MaxTokens: tokens,
+		Stream:    stream,
+		System:    system,
 	}
+
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request payload: %w", err)

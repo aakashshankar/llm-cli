@@ -21,14 +21,14 @@ var rootCmd = &cobra.Command{
 
 func chat() {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("'exit' to exit")
+	fmt.Println("Entering chat mode. Type 'exit' to exit")
 	for {
 		fmt.Print("> ")
 		text, _ := reader.ReadString('\n')
 		if text == "exit\n" {
 			break
 		}
-		api.PromptClaude(text, true, 1024, "claude-3-sonnet-20240229")
+		api.PromptClaude(text, true, 1024, "claude-3-sonnet-20240229", "You are a helpful assistant.")
 		fmt.Println()
 	}
 }
