@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/aakashshankar/claude-cli/api"
+	"github.com/aakashshankar/claude-cli/session"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -22,13 +23,14 @@ var rootCmd = &cobra.Command{
 func chat() {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Println("Entering chat mode. Type 'exit' to exit")
+	session.ClearSession()
 	for {
 		fmt.Print("> ")
 		text, _ := reader.ReadString('\n')
 		if text == "exit\n" {
 			break
 		}
-		api.PromptClaude(text, true, 1024, "claude-3-sonnet-20240229", "You are a helpful assistant.")
+		api.PromptClaude(text, true, 1024, "claude-3-sonnet-20240229", "You are a helpful assistant.", false)
 		fmt.Println()
 	}
 }

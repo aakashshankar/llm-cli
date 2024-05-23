@@ -10,7 +10,7 @@ Currently, you can build from source and use the generated binary.
 Clone the repository and run the following command:
 
 ```bash
-make build
+make
 ```
 
 This will create a binary named `claude` in the `bin` directory.
@@ -25,6 +25,8 @@ Once you have set the environment variables, you can use the `bin/claude ask` co
 ## Lots of improvements to come! 💡
 
 - [ ] Add support for other models 
-- [ ] Persistent context 
-- [ ] Chat mode
+- [x] Persistent context 
+- [x] Chat mode
 - [ ] Share context across multiple models
+- [ ] Code cleanup
+- [ ] Auto suggest command corrections!
