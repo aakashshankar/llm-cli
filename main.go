@@ -1,6 +1,6 @@
 package main
 
-import rootCmd "github.com/aakashshankar/claude-cli/cmd"
+import rootCmd "github.com/aakashshankar/llm-cli/cmd"
 
 func main() {
 	rootCmd.Execute()
