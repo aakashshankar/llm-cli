@@ -9,8 +9,8 @@ const Version = "0.0.1"
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Claude CLI version",
-	Long:  `Prints the version number of the Claude CLI`,
+	Short: "LLM CLI version",
+	Long:  `Prints the version number of the LLM CLI`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(Version)
 	},

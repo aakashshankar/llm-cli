@@ -2,7 +2,7 @@
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
-BINARY_NAME=claude
+BINARY_NAME=llm
 
 GOOS=$(shell go env GOOS)
 GOARCH=$(shell go env GOARCH)

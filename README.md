@@ -1,8 +1,10 @@
-# Claude CLI 🤖
+# LLM CLI ❄️ 
 
-A CLI for Claude's completions. Provide your API keys as the following environment variables:
+A CLI tool to interact with LLMs. Provide your API keys in this format: `<completer>_API_KEY>`
 
-- `ANTHROPIC_API_KEY`
+The supported completers are:
+- [x] `ANTHROPIC`
+- [ ] `OPENAI`
 
 ## Installation ⚙️
 
@@ -13,20 +15,29 @@ Clone the repository and run the following command:
 make
 ```
 
-This will create a binary named `claude` in the `bin` directory.
+This will create a binary named `llm` in the `bin` directory.
 
 ## Usage 💻
 
 To use the CLI, you need to provide your API keys as environment variables.
 You can set these variables in your shell configuration file (e.g., `.zshrc`) or directly in the terminal.
 
-Once you have set the environment variables, you can use the `bin/claude ask` command from the repository root to prompt Claude.
+Once you have set the environment variables, you can use the following command (from repo root) to prompt or chat with the LLM:
 
-## Lots of improvements to come! 💡
+```bash
+bin/llm <llm-name> <prompt> | chat
+```
+
+## Lots of improvements to come! 🚀
 
 - [ ] Add support for other models 
 - [x] Persistent context 
 - [x] Chat mode
 - [ ] Share context across multiple models
-- [ ] Code cleanup
+- [x] Code cleanup
+- [ ] Pretty print the response
+- [ ] Support multiple output formats (e.g., JSON, Markdown, HTML)
 - [ ] Auto suggest command corrections!
+- [ ] Multiple sessions. 
+- [ ] Externalize model configs. Automate their maintenance.
+- [ ] Stretch goal: Host LLMs on a third party platform.
