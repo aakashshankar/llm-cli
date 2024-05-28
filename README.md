@@ -4,6 +4,7 @@ A CLI tool to interact with LLMs. Provide your API keys in this format: `<comple
 
 The supported completers are:
 - [x] `ANTHROPIC`
+- [x] `MISTRAL`
 - [ ] `OPENAI`
 
 ## Installation ⚙️

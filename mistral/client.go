@@ -1,4 +1,4 @@
-package anthropic
+package mistral
 
 import (
 	"bufio"
@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-const apiBaseURL = "https://api.anthropic.com"
+const v1apiBaseURL = "https://api.mistral.ai/v1"
 
 type Client struct {
 	config *Config
@@ -50,6 +50,7 @@ func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, sy
 
 		}
 	}(resp.Body)
+
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("request failed with status code %d", resp.StatusCode)
 	}
@@ -63,7 +64,7 @@ func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, sy
 		s.AddMessage("assistant", response)
 	} else {
 		completion, ok := parseResponse(resp)
-		response = completion.Content[0].Text
+		response = completion.Choices[0].Delta.Content
 		if ok != nil {
 			return "", ok
 		}
@@ -74,85 +75,42 @@ func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, sy
 	if err != nil {
 		return "", err
 	}
-	return response, nil
-}
 
-func parseResponse(resp *http.Response) (*CompletionResponse, error) {
-	var completion CompletionResponse
-	err := json.NewDecoder(resp.Body).Decode(&completion)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response payload: %w", err)
-	}
-	return &completion, nil
-}
-
-func parseStreamingResponse(resp *http.Response) (string, error) {
-	reader := bufio.NewReader(resp.Body)
-	var response string
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return "", fmt.Errorf("error reading response: %w", err)
-		}
-		if strings.TrimSpace(line) == "" {
-			continue
-		}
-
-		if strings.HasPrefix(line, "data: ") {
-			data := strings.TrimPrefix(line, "data: ")
-			data = strings.TrimSpace(data)
-
-			var eventData map[string]interface{}
-			err := json.Unmarshal([]byte(data), &eventData)
-			if err != nil {
-				fmt.Println("Error unmarshalling JSON:", err)
-				continue
-			}
-
-			if eventType, ok := eventData["type"].(string); ok && eventType == "content_block_delta" {
-				if delta, ok := eventData["delta"].(map[string]interface{}); ok {
-					if text, ok := delta["text"].(string); ok {
-						fmt.Print(text)
-						response += text
-					}
-				}
-			}
-		}
-	}
 	return response, nil
 }
 
 func marshalRequest(prompt string, c *Client, stream bool, tokens int, model string, system string,
 	session *session.Session) (*http.Request, error) {
-	messages := prependContext(prompt, session)
+	messages := prependContext(prompt, system, session)
 	payload := CompletionRequest{
 		Model:     model,
 		Messages:  messages,
 		MaxTokens: tokens,
 		Stream:    stream,
-		System:    system,
 	}
-
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request payload: %w", err)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/v1/messages", apiBaseURL), bytes.NewBuffer(jsonPayload))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/chat/completions", v1apiBaseURL), bytes.NewBuffer(jsonPayload))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-api-key", c.config.APIKey)
-	req.Header.Set("anthropic-version", c.config.AnthropicVersion)
+	req.Header.Set("Authorization", "Bearer "+c.config.APIKey)
+	req.Header.Set("Accept", "application/json")
 	return req, nil
 }
 
-func prependContext(prompt string, session *session.Session) []Message {
+func prependContext(prompt string, system string, session *session.Session) []Message {
 	var messages []Message
+	if system != "" {
+		messages = append(messages, Message{
+			Role:    "system",
+			Content: system,
+		})
+	}
 	for _, message := range session.Messages {
 		messages = append(messages, Message{
 			Role:    message.Role,
@@ -165,4 +123,58 @@ func prependContext(prompt string, session *session.Session) []Message {
 	})
 	session.AddMessage("user", prompt)
 	return messages
+}
+
+func parseResponse(resp *http.Response) (*CompletionResponse, error) {
+	var completion CompletionResponse
+	err := json.NewDecoder(resp.Body).Decode(&completion)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response payload: %w", err)
+	}
+	return &completion, nil
+}
+
+func parseStreamingResponse(resp *http.Response) (string, error) {
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
+
+	var contentBuilder strings.Builder
+	reader := bufio.NewReader(resp.Body)
+
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return "", fmt.Errorf("error reading response: %w", err)
+		}
+
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		if line == "data: [DONE]" {
+			break
+		}
+
+		if strings.HasPrefix(line, "data: ") {
+			data := strings.TrimPrefix(line, "data: ")
+
+			var event CompletionResponse
+			if err := json.Unmarshal([]byte(data), &event); err != nil {
+				return "", fmt.Errorf("error unmarshaling event: %w", err)
+			}
+			content := event.Choices[0].Delta.Content
+			fmt.Print(content)
+			contentBuilder.WriteString(content)
+		}
+	}
+
+	return contentBuilder.String(), nil
 }
