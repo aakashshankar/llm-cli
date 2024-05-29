@@ -22,10 +22,10 @@ type CompletionResponse struct {
 	Created int    `json:"created"`
 	Model   string `json:"model"`
 	Choices []struct {
-		Delta struct {
+		Message struct {
 			Content string `json:"content"`
 			Role    string `json:"role"`
-		} `json:"delta"`
+		} `json:"message"`
 		FinishReason string `json:"finish_reason"`
 		Index        int    `json:"index"`
 	}

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/aakashshankar/llm-cli/highlight"
 	"github.com/aakashshankar/llm-cli/session"
 	"io"
 	"net/http"
@@ -35,7 +36,7 @@ func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, sy
 		fmt.Println("Error loading session:", err)
 		os.Exit(1)
 	}
-	req, err := marshalRequest(prompt, c, stream, tokens, model, system, s)
+	req, err := c.MarshalRequest(prompt, stream, tokens, model, system, s)
 	if err != nil {
 		return "", err
 	}
@@ -56,18 +57,17 @@ func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, sy
 	var response string
 	var ok error
 	if stream {
-		response, ok = parseStreamingResponse(resp)
+		response, ok = c.ParseStreamingResponse(resp)
 		if ok != nil {
 			return "", ok
 		}
 		s.AddMessage("assistant", response)
 	} else {
-		completion, ok := parseResponse(resp)
-		response = completion.Content[0].Text
+		completion, ok := c.ParseResponse(resp)
 		if ok != nil {
 			return "", ok
 		}
-		fmt.Println(response)
+		fmt.Println(highlight.RegularHighlight(completion))
 		s.AddMessage("assistant", response)
 	}
 	err = s.Save()
@@ -77,18 +77,25 @@ func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, sy
 	return response, nil
 }
 
-func parseResponse(resp *http.Response) (*CompletionResponse, error) {
+func (c *Client) ParseResponse(resp *http.Response) (string, error) {
 	var completion CompletionResponse
 	err := json.NewDecoder(resp.Body).Decode(&completion)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response payload: %w", err)
+		return "", fmt.Errorf("failed to unmarshal response payload: %w", err)
 	}
-	return &completion, nil
+	return completion.Content[0].Text, nil
 }
 
-func parseStreamingResponse(resp *http.Response) (string, error) {
+func (c *Client) ParseStreamingResponse(resp *http.Response) (string, error) {
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
+
 	reader := bufio.NewReader(resp.Body)
-	var response string
+	var contentBuilder strings.Builder
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
@@ -105,27 +112,27 @@ func parseStreamingResponse(resp *http.Response) (string, error) {
 			data := strings.TrimPrefix(line, "data: ")
 			data = strings.TrimSpace(data)
 
-			var eventData map[string]interface{}
-			err := json.Unmarshal([]byte(data), &eventData)
+			var event CompletionStreamResponse
+			err := json.Unmarshal([]byte(data), &event)
 			if err != nil {
 				fmt.Println("Error unmarshalling JSON:", err)
 				continue
 			}
 
-			if eventType, ok := eventData["type"].(string); ok && eventType == "content_block_delta" {
-				if delta, ok := eventData["delta"].(map[string]interface{}); ok {
-					if text, ok := delta["text"].(string); ok {
-						fmt.Print(text)
-						response += text
-					}
+			switch event.Type {
+			case "content_block_delta":
+				if event.Delta != nil {
+					text := event.Delta.Text
+					fmt.Println(text)
+					contentBuilder.WriteString(text)
 				}
 			}
 		}
 	}
-	return response, nil
+	return contentBuilder.String(), nil
 }
 
-func marshalRequest(prompt string, c *Client, stream bool, tokens int, model string, system string,
+func (c *Client) MarshalRequest(prompt string, stream bool, tokens int, model string, system string,
 	session *session.Session) (*http.Request, error) {
 	messages := prependContext(prompt, session)
 	payload := CompletionRequest{

@@ -24,6 +24,38 @@ type CompletionResponse struct {
 	Usage        Usage         `json:"usage"`
 }
 
+type CompletionStreamResponse struct {
+	Type         string         `json:"type"`
+	Message      *StreamMessage `json:"message,omitempty"`
+	ContentBlock *ContentBlock  `json:"content_block,omitempty"`
+	Delta        *Delta         `json:"delta,omitempty"`
+	Usage        *Usage         `json:"usage,omitempty"`
+	Index        int            `json:"index,omitempty"`
+	StopReason   *string        `json:"stop_reason,omitempty"`
+	StopSequence *string        `json:"stop_sequence,omitempty"`
+}
+
+type ContentBlock struct {
+	Type string `json:"type"`
+	Text string `json:"text"`
+}
+
+type Delta struct {
+	Type string `json:"type"`
+	Text string `json:"text"`
+}
+
+type StreamMessage struct {
+	ID           string   `json:"id"`
+	Type         string   `json:"type"`
+	Role         string   `json:"role"`
+	Content      []string `json:"content"`
+	Model        string   `json:"model"`
+	StopReason   *string  `json:"stop_reason"`
+	StopSequence *string  `json:"stop_sequence"`
+	Usage        Usage    `json:"usage"`
+}
+
 type Message struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`

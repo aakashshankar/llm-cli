@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/aakashshankar/llm-cli/highlight"
 	"github.com/aakashshankar/llm-cli/session"
 	"io"
 	"net/http"
@@ -35,7 +36,7 @@ func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, sy
 		fmt.Println("Error loading session:", err)
 		os.Exit(1)
 	}
-	req, err := marshalRequest(prompt, c, stream, tokens, model, system, s)
+	req, err := c.MarshalRequest(prompt, stream, tokens, model, system, s)
 	if err != nil {
 		return "", err
 	}
@@ -57,19 +58,19 @@ func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, sy
 	var response string
 	var ok error
 	if stream {
-		response, ok = parseStreamingResponse(resp)
+		response, ok = c.ParseStreamingResponse(resp)
 		if ok != nil {
 			return "", ok
 		}
 		s.AddMessage("assistant", response)
 	} else {
-		completion, ok := parseResponse(resp)
-		response = completion.Choices[0].Delta.Content
+		completion, ok := c.ParseResponse(resp)
 		if ok != nil {
-			return "", ok
+			fmt.Println("Error parsing completion:", ok)
+			os.Exit(1)
 		}
-		fmt.Println(response)
-		s.AddMessage("assistant", response)
+		fmt.Println(highlight.RegularHighlight(completion))
+		s.AddMessage("assistant", completion)
 	}
 	err = s.Save()
 	if err != nil {
@@ -79,7 +80,7 @@ func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, sy
 	return response, nil
 }
 
-func marshalRequest(prompt string, c *Client, stream bool, tokens int, model string, system string,
+func (c *Client) MarshalRequest(prompt string, stream bool, tokens int, model string, system string,
 	session *session.Session) (*http.Request, error) {
 	messages := prependContext(prompt, system, session)
 	payload := CompletionRequest{
@@ -125,16 +126,16 @@ func prependContext(prompt string, system string, session *session.Session) []Me
 	return messages
 }
 
-func parseResponse(resp *http.Response) (*CompletionResponse, error) {
+func (c *Client) ParseResponse(resp *http.Response) (string, error) {
 	var completion CompletionResponse
 	err := json.NewDecoder(resp.Body).Decode(&completion)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response payload: %w", err)
+		return "", fmt.Errorf("failed to unmarshal response payload: %w", err)
 	}
-	return &completion, nil
+	return completion.Choices[0].Message.Content, nil
 }
 
-func parseStreamingResponse(resp *http.Response) (string, error) {
+func (c *Client) ParseStreamingResponse(resp *http.Response) (string, error) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
@@ -143,6 +144,7 @@ func parseStreamingResponse(resp *http.Response) (string, error) {
 	}(resp.Body)
 
 	var contentBuilder strings.Builder
+	//streamHighlighter := highlight.PartialHighlighter()
 	reader := bufio.NewReader(resp.Body)
 
 	for {
@@ -166,7 +168,7 @@ func parseStreamingResponse(resp *http.Response) (string, error) {
 		if strings.HasPrefix(line, "data: ") {
 			data := strings.TrimPrefix(line, "data: ")
 
-			var event CompletionResponse
+			var event CompletionStreamResponse
 			if err := json.Unmarshal([]byte(data), &event); err != nil {
 				return "", fmt.Errorf("error unmarshaling event: %w", err)
 			}

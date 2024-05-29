@@ -4,10 +4,15 @@ import (
 	"fmt"
 	"github.com/aakashshankar/llm-cli/anthropic"
 	"github.com/aakashshankar/llm-cli/mistral"
+	"github.com/aakashshankar/llm-cli/session"
+	"net/http"
 )
 
 type LLM interface {
 	Prompt(prompt string, stream bool, tokens int, model string, system string, clear bool) (string, error)
+	MarshalRequest(prompt string, stream bool, tokens int, model string, system string, session *session.Session) (*http.Request, error)
+	ParseResponse(resp *http.Response) (string, error)
+	ParseStreamingResponse(resp *http.Response) (string, error)
 }
 
 func NewLLM(llmType string) (LLM, error) {

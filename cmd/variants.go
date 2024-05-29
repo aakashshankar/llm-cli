@@ -61,7 +61,7 @@ func init() {
 		llmCmd.Flags().String("model", defaultModel, "Model that responds to the prompt")
 		llmCmd.Flags().BoolVarP(&stream, "stream", "s", false, "Stream the response")
 		llmCmd.Flags().IntVarP(&tokens, "tokens", "t", 1024, "Maximum number of tokens preferred in the output")
-		llmCmd.Flags().StringVarP(&system, "system", "S", "You are a helpful assistant", "Set the system prompt")
+		llmCmd.Flags().StringVarP(&system, "system", "S", "", "Set the system prompt")
 		llmCmd.Flags().BoolVarP(&clr, "clear", "c", false, "Clear the current session and start a new one")
 
 		chatCmd := &cobra.Command{

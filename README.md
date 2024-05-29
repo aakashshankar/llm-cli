@@ -34,9 +34,9 @@ bin/llm <llm-name> <prompt> | chat
 - [ ] Add support for other models 
 - [x] Persistent context 
 - [x] Chat mode
-- [ ] Share context across multiple models
+- [x] Share context across multiple models
 - [x] Code cleanup
-- [ ] Pretty print the response
+- [x] Pretty print the response (streaming still needs work)
 - [ ] Support multiple output formats (e.g., JSON, Markdown, HTML)
 - [ ] Auto suggest command corrections!
 - [ ] Multiple sessions. 
