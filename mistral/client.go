@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/aakashshankar/llm-cli/highlight"
 	"github.com/aakashshankar/llm-cli/session"
 	"io"
 	"net/http"
@@ -69,7 +68,7 @@ func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, sy
 			fmt.Println("Error parsing completion:", ok)
 			os.Exit(1)
 		}
-		fmt.Println(highlight.RegularHighlight(completion))
+		fmt.Println(completion)
 		s.AddMessage("assistant", completion)
 	}
 	err = s.Save()
@@ -144,9 +143,7 @@ func (c *Client) ParseStreamingResponse(resp *http.Response) (string, error) {
 	}(resp.Body)
 
 	var contentBuilder strings.Builder
-	//streamHighlighter := highlight.PartialHighlighter()
 	reader := bufio.NewReader(resp.Body)
-
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {

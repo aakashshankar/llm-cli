@@ -3,6 +3,7 @@ package api
 import (
 	"bufio"
 	"fmt"
+	"github.com/aakashshankar/llm-cli/defaults"
 	"github.com/aakashshankar/llm-cli/llm"
 	"github.com/aakashshankar/llm-cli/session"
 	"os"
@@ -31,17 +32,11 @@ func Chat(llmType string) {
 
 	reader := bufio.NewReader(os.Stdin)
 	session.ClearSession()
-	var model string
-	switch llmType {
-	case "claude":
-		model = "claude-3-sonnet-20240229"
-	case "mistral":
-		model = "mistral-large-latest"
-	default:
-		fmt.Println("Unknown LLM:", llmType)
+	model, err := defaults.GetDefaultModel(llmType)
+	if err != nil {
+		fmt.Println("Error getting default model:", err)
 		os.Exit(1)
 	}
-
 	for {
 		fmt.Print("> ")
 		text, _ := reader.ReadString('\n')

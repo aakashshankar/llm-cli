@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/aakashshankar/llm-cli/api"
+	"github.com/aakashshankar/llm-cli/defaults"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -22,7 +23,7 @@ func LoadVariants() []string {
 	var vars []string
 	err := json.Unmarshal(variants, &vars)
 	if err != nil {
-		_ = fmt.Errorf("error unmarshaling variants: %w", err)
+		fmt.Println("error unmarshaling variants: %w", err)
 	}
 	return vars
 }
@@ -32,7 +33,6 @@ func init() {
 	for _, v := range llmVariants {
 		// absolute nightmare of a pitfall
 		variant := v
-		var defaultModel string
 		llmCmd := &cobra.Command{
 			Use:   variant + " <prompt>",
 			Short: "Interact with the " + variant + " LLM",
@@ -48,13 +48,9 @@ func init() {
 			},
 		}
 
-		switch variant {
-		case "claude":
-			defaultModel = "claude-3-sonnet-20240229"
-		case "mistral":
-			defaultModel = "mistral-large-latest"
-		default:
-			fmt.Println("Unknown LLM:", variant)
+		defaultModel, err := defaults.GetDefaultModel(variant)
+		if err != nil {
+			fmt.Println("Error getting default model:", err)
 			os.Exit(1)
 		}
 

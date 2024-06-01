@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/aakashshankar/llm-cli/highlight"
 	"github.com/aakashshankar/llm-cli/session"
 	"io"
 	"net/http"
@@ -67,7 +66,7 @@ func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, sy
 		if ok != nil {
 			return "", ok
 		}
-		fmt.Println(highlight.RegularHighlight(completion))
+		fmt.Println(completion)
 		s.AddMessage("assistant", response)
 	}
 	err = s.Save()
@@ -123,7 +122,7 @@ func (c *Client) ParseStreamingResponse(resp *http.Response) (string, error) {
 			case "content_block_delta":
 				if event.Delta != nil {
 					text := event.Delta.Text
-					fmt.Println(text)
+					fmt.Print(text)
 					contentBuilder.WriteString(text)
 				}
 			}
