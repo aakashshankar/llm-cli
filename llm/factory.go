@@ -2,9 +2,9 @@ package llm
 
 import (
 	"fmt"
-	"github.com/aakashshankar/llm-cli/anthropic"
-	"github.com/aakashshankar/llm-cli/mistral"
 	"github.com/aakashshankar/llm-cli/session"
+	"github.com/aakashshankar/llm-cli/variants/anthropic"
+	"github.com/aakashshankar/llm-cli/variants/mistral"
 	"net/http"
 )
 

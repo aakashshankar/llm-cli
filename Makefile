@@ -2,6 +2,7 @@
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
+GOTEST=$(GOCMD) test
 BINARY_NAME=llm
 
 GOOS=$(shell go env GOOS)
@@ -14,3 +15,7 @@ build:
 clean:
 	$(GOCLEAN)
 	rm -rf bin/*
+
+.PHONY: test
+test:
+	$(GOTEST) -v ./test/...
