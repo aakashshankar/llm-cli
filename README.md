@@ -5,7 +5,8 @@ A CLI tool to interact with LLMs. Provide your API keys in this format: `<comple
 The supported completers are:
 - [x] `ANTHROPIC`
 - [x] `MISTRAL`
-- [ ] `OPENAI`
+- [x] `OPENAI`
+- [ ] `PERPLEXITY`
 
 ## Installation ⚙️
 
@@ -27,6 +28,12 @@ Your conversation history can be shared among all supported LLMs. This allows yo
 
 ### 3. Terminal assistance
 Prefixing any command with llm provides a clear and concise explanation of that command, along with examples demonstrating its usage.
+
+### Coming soon 🤫
+- [ ] Default models for each variant
+- [ ] Carefully crafted system prompts for terminal assistance
+- [ ] Multiple sessions
+- [ ] UI using [tview](https://github.com/rivo/tview)
 
 ## Usage 💻
 
@@ -50,5 +57,6 @@ And of course, add `/path/to/repo/bin` to your `$PATH` to use the CLI from anywh
 Create an environment variable `DEFAULT_COMPLETER` with the name of the completer you want to use. They are:
 - `claude`
 - `mistral`
+- `gpt`
 
 Then, you can prefix any command you want to understand with `llm` to understand how it works with examples.

@@ -15,7 +15,6 @@ var variants []byte
 
 var stream bool
 var tokens int
-var model string
 var system string
 var clr bool
 

@@ -5,6 +5,7 @@ import (
 	"github.com/aakashshankar/llm-cli/session"
 	"github.com/aakashshankar/llm-cli/variants/anthropic"
 	"github.com/aakashshankar/llm-cli/variants/mistral"
+	"github.com/aakashshankar/llm-cli/variants/openai"
 	"net/http"
 )
 
@@ -29,6 +30,12 @@ func NewLLM(llmType string) (LLM, error) {
 			return nil, fmt.Errorf("error loading config for Mistral: %w", err)
 		}
 		return mistral.NewClient(config), nil
+	case "gpt":
+		config, err := openai.LoadConfig()
+		if err != nil {
+			return nil, fmt.Errorf("error loading config for OpenAI: %w", err)
+		}
+		return openai.NewClient(config), nil
 	default:
 		return nil, fmt.Errorf("unknown LLM type: %s", llmType)
 	}

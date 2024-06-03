@@ -37,6 +37,7 @@ func Chat(llmType string) {
 		fmt.Println("Error getting default model:", err)
 		os.Exit(1)
 	}
+	fmt.Println("Entering chat mode. Type 'exit' to exit.")
 	for {
 		fmt.Print("> ")
 		text, _ := reader.ReadString('\n')
