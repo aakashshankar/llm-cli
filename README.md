@@ -18,6 +18,16 @@ make
 
 This will create a binary named `llm` in the `bin` directory.
 
+## Features 🌟
+### 1. Context persistence
+All interactions are stored locally on your filesystem. This setup allows for multiple prompts to be sent to LLMs, with context being maintained across different conversations.
+
+### 2. Shared conversational history
+Your conversation history can be shared among all supported LLMs. This allows you to leverage the strengths of each model, combining their capabilities to create a powerful conversational experience.
+
+### 3. Terminal assistance
+Prefixing any command with llm provides a clear and concise explanation of that command, along with examples demonstrating its usage.
+
 ## Usage 💻
 
 ### 1. CLIs
@@ -25,12 +35,12 @@ This will create a binary named `llm` in the `bin` directory.
 To use the CLI, you need to provide your API keys as environment variables.
 You can set these variables in your shell configuration file (e.g., `.zshrc`) or directly in the terminal.
 
-Once you have set the environment variables, you can use the following command (from repo root) to prompt the LLM:
+Once you've set the environment variables, you can use the following command (from repo root) to prompt the LLM:
 
 ```bash
 bin/llm <llm-name> [flags] <prompt>
 ```
-To chat, simple use the `chat` subcommand:
+To chat, simply use the `chat` subcommand:
 ```bash
 bin/llm <llm-name> chat
 ```
