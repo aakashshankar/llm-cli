@@ -1,7 +1,7 @@
 {
   "default_models": {
     "claude": "claude-3-sonnet-20240229",
-    "mistral": "mistral-large-latest",
-    "gpt": "gpt-4o"
+    "gpt": "gpt-4o",
+    "mistral": "mistral-large-latest"
   }
 }
