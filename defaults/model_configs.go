@@ -8,19 +8,32 @@ import (
 	"path/filepath"
 )
 
-//go:embed static/model_configs.json
-var modelConfigs []byte
-
 type ModelConfig struct {
 	DefaultModels map[string]string `json:"default_models"`
 }
 
+var configFilePath string
 var modelConfig ModelConfig
 
 func init() {
-	err := json.Unmarshal(modelConfigs, &modelConfig)
+	exePath, err := os.Executable()
 	if err != nil {
-		fmt.Println("Error unmarshalling model configs:", err)
+		fmt.Println("Error determining executable path:", err)
+		os.Exit(1)
+	}
+	configFilePath = filepath.Join(filepath.Dir(exePath), "../defaults", "static", "model_configs.json")
+	LoadConfig(configFilePath)
+}
+
+func LoadConfig(configFilePath string) {
+	bytes, err := os.ReadFile(configFilePath)
+	if err != nil {
+		fmt.Println("Error reading config file:", err)
+		os.Exit(1)
+	}
+	err = json.Unmarshal(bytes, &modelConfig)
+	if err != nil {
+		fmt.Println("Error unmarshalling config file:", err)
 		os.Exit(1)
 	}
 }
@@ -40,14 +53,8 @@ func SetDefaultModel(variant string, model string) error {
 	if err != nil {
 		return fmt.Errorf("error marshaling model config to JSON: %w", err)
 	}
-	exePath, err := os.Executable()
-	if err != nil {
-		return fmt.Errorf("error getting executable path: %w", err)
-	}
-	// there's gotta be a better way to do this
-	configFile := filepath.Join(filepath.Dir(exePath), "../defaults/static/model_configs.json")
 
-	err = os.WriteFile(configFile, updatedConfig, 0644)
+	err = os.WriteFile(configFilePath, updatedConfig, 0644)
 	if err != nil {
 		return fmt.Errorf("error writing updated model config to disk: %w", err)
 	}
