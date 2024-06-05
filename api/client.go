@@ -44,7 +44,7 @@ func Chat(llmType string) {
 		if text == "exit\n" {
 			break
 		}
-		_, err := newLLM.Prompt(text, true, 1024, model, "You are a helpful assistant.", false)
+		_, err := newLLM.Prompt(text, true, 1024, model, "", false)
 		if err != nil {
 			fmt.Println("Error fetching completion:", err)
 			continue
