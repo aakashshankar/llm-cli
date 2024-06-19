@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/aakashshankar/llm-cli/session"
 	"github.com/aakashshankar/llm-cli/variants/anthropic"
+	"github.com/aakashshankar/llm-cli/variants/gemini"
 	"github.com/aakashshankar/llm-cli/variants/mistral"
 	"github.com/aakashshankar/llm-cli/variants/openai"
 	"net/http"
@@ -36,6 +37,12 @@ func NewLLM(llmType string) (LLM, error) {
 			return nil, fmt.Errorf("error loading config for OpenAI: %w", err)
 		}
 		return openai.NewClient(config), nil
+	case "gemini":
+		config, err := gemini.LoadConfig()
+		if err != nil {
+			return nil, fmt.Errorf("error loading config for Gemini: %w", err)
+		}
+		return gemini.NewClient(config), nil
 	default:
 		return nil, fmt.Errorf("unknown LLM type: %s", llmType)
 	}

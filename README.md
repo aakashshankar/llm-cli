@@ -1,11 +1,12 @@
 # LLM CLI 🚀 
 
-A CLI tool to interact with LLMs. Provide your API keys in this format: `<completer>_API_KEY>`
+A CLI tool to interact with LLMs. Provide your API keys as environment variables in this format: `<completer>_API_KEY>`
 
 The supported completers are:
 - [x] `ANTHROPIC`
 - [x] `MISTRAL`
 - [x] `OPENAI`
+- [x] `GEMINI`
 - [ ] `PERPLEXITY`
 
 ## Installation ⚙️
