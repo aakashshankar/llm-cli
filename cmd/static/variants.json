@@ -1,5 +1,6 @@
 [
     "claude",
     "mistral",
-    "gpt"
+    "gpt",
+    "gemini"
 ]
