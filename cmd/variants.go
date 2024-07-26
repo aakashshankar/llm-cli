@@ -55,9 +55,10 @@ func chatCommand(variant string) *cobra.Command {
 		Short: "Interact with the " + variant + " LLM in chat mode",
 		Long:  "Chat with the " + variant + " LLM",
 		Run: func(cmd *cobra.Command, args []string) {
-			api.Chat(variant)
+			api.Chat(variant, clr)
 		},
 	}
+	chatCmd.Flags().BoolVarP(&clr, "clear", "c", false, "Clear the current chat session and start a new one")
 	return chatCmd
 }
 

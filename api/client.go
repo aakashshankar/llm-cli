@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/aakashshankar/llm-cli/defaults"
 	"github.com/aakashshankar/llm-cli/llm"
-	"github.com/aakashshankar/llm-cli/session"
 	"os"
 )
 
@@ -23,7 +22,7 @@ func Prompt(llmType string, prompt string, stream bool, tokens int, model string
 	}
 }
 
-func Chat(llmType string) {
+func Chat(llmType string, clr bool) {
 	newLLM, err := llm.NewLLM(llmType)
 	if err != nil {
 		fmt.Println("Error: ", err)
@@ -31,7 +30,6 @@ func Chat(llmType string) {
 	}
 
 	reader := bufio.NewReader(os.Stdin)
-	session.ClearSession()
 	model, err := defaults.GetDefaultModel(llmType)
 	if err != nil {
 		fmt.Println("Error getting default model:", err)
@@ -44,7 +42,7 @@ func Chat(llmType string) {
 		if text == "exit\n" {
 			break
 		}
-		_, err := newLLM.Prompt(text, true, 1024, model, "", false)
+		_, err := newLLM.Prompt(text, true, 1024, model, "", clr)
 		if err != nil {
 			fmt.Println("Error fetching completion:", err)
 			continue
