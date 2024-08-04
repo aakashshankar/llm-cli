@@ -8,7 +8,6 @@ import (
 	"github.com/aakashshankar/llm-cli/session"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -27,13 +26,11 @@ func NewClient(config *Config) *Client {
 }
 
 func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, system string, clear bool) (string, error) {
+	var s *session.Session
 	if clear {
-		session.ClearSession()
-	}
-	s := session.NewSession()
-	if err := s.LoadLatest(); err != nil {
-		fmt.Println("Error loading session:", err)
-		os.Exit(1)
+		s = session.ClearSession()
+	} else {
+		s = session.LoadLatest()
 	}
 	req, err := c.MarshalRequest(prompt, stream, tokens, model, system, s)
 	if err != nil {
@@ -69,10 +66,7 @@ func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, sy
 		fmt.Println(completion)
 		s.AddMessage("assistant", response)
 	}
-	err = s.Save()
-	if err != nil {
-		return "", err
-	}
+	s.Save()
 	return response, nil
 }
 

@@ -27,14 +27,13 @@ func NewClient(config *Config) *Client {
 }
 
 func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, system string, clear bool) (string, error) {
+	var s *session.Session
 	if clear {
-		session.ClearSession()
+		s = session.ClearSession()
+	} else {
+		s = session.LoadLatest()
 	}
-	s := session.NewSession()
-	if err := s.LoadLatest(); err != nil {
-		fmt.Println("Error loading session:", err)
-		os.Exit(1)
-	}
+
 	req, err := c.MarshalRequest(prompt, stream, tokens, model, system, s)
 	if err != nil {
 		return "", err
@@ -71,11 +70,7 @@ func (c *Client) Prompt(prompt string, stream bool, tokens int, model string, sy
 		fmt.Println(completion)
 		s.AddMessage("assistant", completion)
 	}
-	err = s.Save()
-	if err != nil {
-		return "", err
-	}
-
+	s.Save()
 	return response, nil
 }
 

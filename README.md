@@ -29,10 +29,13 @@ Your conversation history can be shared among all supported LLMs. This allows yo
 ### 3. Terminal assistance
 Prefixing any command with llm provides a clear and concise explanation of that command, along with examples demonstrating its usage.
 
+### 4. Multiple sessions
+You can have multiple sessions, each with their own context and history. This allows you to switch between different conversations and maintain a consistent conversational experience.
+
 ### Coming soon 🤫
-- [ ] Default models for each variant
+- [x] ~~Default models for each variant~~
 - [ ] Carefully crafted system prompts for terminal assistance
-- [ ] Multiple sessions
+- [x] ~~Multiple sessions~~
 - [ ] UI using [tview](https://github.com/rivo/tview)
 
 ## Usage 💻

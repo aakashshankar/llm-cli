@@ -36,17 +36,19 @@ func Chat(llmType string, clr bool) {
 		os.Exit(1)
 	}
 	fmt.Println("Entering chat mode. Type 'exit' to exit.")
+	firstPrompt := true
 	for {
 		fmt.Print("> ")
 		text, _ := reader.ReadString('\n')
 		if text == "exit\n" {
 			break
 		}
-		_, err := newLLM.Prompt(text, true, 1024, model, "", clr)
+		_, err := newLLM.Prompt(text, true, 1024, model, "", firstPrompt && clr)
 		if err != nil {
 			fmt.Println("Error fetching completion:", err)
 			continue
 		}
+		firstPrompt = false
 		fmt.Println()
 	}
 }
