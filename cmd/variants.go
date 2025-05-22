@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ahhcash/llm-cli/api"
 	"github.com/ahhcash/llm-cli/defaults"
+	"github.com/ahhcash/llm-cli/ui" // Added import for ui package
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -55,10 +56,14 @@ func chatCommand(variant string) *cobra.Command {
 		Short: "Interact with the " + variant + " LLM in chat mode",
 		Long:  "Chat with the " + variant + " LLM",
 		Run: func(cmd *cobra.Command, args []string) {
-			api.Chat(variant, clr)
+			// api.Chat(variant, clr) // Old call
+			ui.StartChatTUI(system, variant) // New call to start TUI
 		},
 	}
-	chatCmd.Flags().BoolVarP(&clr, "clear", "c", false, "Clear the current chat session and start a new one")
+	// The 'system' variable for the -S flag is defined at the package level
+	// and is used by the parent 'variantCommand'.
+	// The 'clr' flag is not directly used by StartChatTUI yet, but could be passed in the future.
+	chatCmd.Flags().BoolVarP(&clr, "clear", "c", false, "Clear the current chat session and start a new one (TUI might handle this internally)")
 	return chatCmd
 }
 

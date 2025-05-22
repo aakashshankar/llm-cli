@@ -60,3 +60,19 @@ func SetDefaultModel(variant string, model string) error {
 	}
 	return nil
 }
+
+// GetAllDefaultModels returns a copy of the current default models configuration.
+func GetAllDefaultModels() map[string]string {
+	// Return a copy to prevent external modification of the original map
+	modelsCopy := make(map[string]string)
+	for key, value := range modelConfig.DefaultModels {
+		modelsCopy[key] = value
+	}
+	return modelsCopy
+}
+
+// GetConfigFilePathForDisplay returns the path to the model_configs.json file.
+// This is intended for display purposes in UIs or help messages.
+func GetConfigFilePathForDisplay() string {
+	return configFilePath
+}

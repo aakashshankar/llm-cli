@@ -9,6 +9,8 @@ import (
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
+	"sort"
+	"time"
 )
 
 var sessionDirPath string
@@ -18,6 +20,15 @@ var metadataFilePath string
 type Session struct {
 	Uuid     string        `json:"uuid"`
 	Messages []Interaction `json:"history"`
+}
+
+// SessionInfo is a lighter struct for listing sessions in the TUI
+type SessionInfo struct {
+	UUID           string
+	MessageCount   int
+	IsLatest       bool
+	LastModified   time.Time
+	FirstMessage   string // Preview of the first message
 }
 
 type Metadata struct {
@@ -141,9 +152,14 @@ func getLatestSessionUuid() (string, error) {
 	return metadata.LatestSessionUuid, nil
 }
 
+func getLatestSessionUuidNoError() string {
+	latestUUID, _ := getLatestSessionUuid() // Ignore error for this internal helper
+	return latestUUID
+}
+
 func LoadLatest() *Session {
 	if _, err := os.Stat(metadataFilePath); os.IsNotExist(err) {
-		fmt.Println("Could not find metadata file. Creating a new session.")
+		// fmt.Println("Could not find metadata file. Creating a new session.") // Quieter for TUI
 		s := NewSession()
 		s.Save()
 		return s
@@ -151,23 +167,34 @@ func LoadLatest() *Session {
 
 	latestSessionUuid, err := getLatestSessionUuid()
 	if err != nil {
-		fmt.Println("Error getting latest session UUID:", err)
-		panic(err)
+		// fmt.Println("Error getting latest session UUID:", err) // Quieter for TUI
+		// Fallback to new session if metadata is broken but file exists
+		s := NewSession()
+		s.Save()
+		return s
 	}
 	latestFilepath := fmt.Sprintf(sessionFilePath, latestSessionUuid)
 	s, err := loadFromFilepath(latestFilepath)
 	if err != nil {
-		fmt.Println("Error loading latest session:", err)
-		panic(err)
+		// fmt.Println("Error loading latest session:", err) // Quieter for TUI
+		// Fallback to new session if specific session is broken
+		newSess := NewSession()
+		newSess.Save()
+		return newSess
 	}
 	return s
 }
 
 func loadFromFilepath(filepath string) (*Session, error) {
-	if _, err := os.Stat(filepath); os.IsNotExist(err) {
-		fmt.Println("Could not find session file:", err)
+	fileInfo, err := os.Stat(filepath)
+	if os.IsNotExist(err) {
+		// fmt.Println("Could not find session file:", err) // Quieter for TUI
 		return nil, err
 	}
+	if err != nil {
+		return nil, fmt.Errorf("error getting file info for %s: %w", filepath, err)
+	}
+
 
 	data, err := os.ReadFile(filepath)
 	if err != nil {
@@ -180,7 +207,7 @@ func loadFromFilepath(filepath string) (*Session, error) {
 	s := &Session{}
 	err = dec.Decode(s)
 	if err != nil {
-		fmt.Println("Error decoding session file:", err)
+		fmt.Println("Error decoding session file:", err) // Keep this as it's a real corruption issue
 		return nil, err
 	}
 	return s, nil
@@ -192,25 +219,54 @@ func ClearSession() *Session {
 	return newSess
 }
 
-func ListSessions() {
+// ListSessions now returns a slice of SessionInfo and an error
+func ListSessions() ([]SessionInfo, error) {
 	filePaths, err := filepath.Glob(sessionDirPath + "/session-*.gob")
 	if err != nil {
-		fmt.Println("Error listing session files:", err)
-		panic(err)
+		return nil, fmt.Errorf("error listing session files: %w", err)
 	}
-	latest, _ := getLatestSessionUuid()
+
+	var sessions []SessionInfo
+	latestUUID := getLatestSessionUuidNoError() // Use the error-ignoring version for comparison
 
 	for _, filePath := range filePaths {
 		s, err := loadFromFilepath(filePath)
 		if err != nil {
-			fmt.Println("Error loading session, skipping:", err)
+			// Log or collect errors instead of printing directly
+			fmt.Fprintf(os.Stderr, "Error loading session %s, skipping: %v\n", filePath, err)
 			continue
 		}
-		if s.Uuid == latest {
-			fmt.Printf("* ")
+
+		fileInfo, statErr := os.Stat(filePath)
+		if statErr != nil {
+			fmt.Fprintf(os.Stderr, "Error getting file info for %s, skipping: %v\n", filePath, statErr)
+			continue
 		}
-		fmt.Printf("Session %s\nMessage count: %d\n-------------\n", s.Uuid, len(s.Messages))
+		
+		firstMessage := ""
+		if len(s.Messages) > 0 {
+			firstMessage = s.Messages[0].Content
+			if len(firstMessage) > 50 { // Truncate for display
+				firstMessage = firstMessage[:47] + "..."
+			}
+		}
+
+
+		sessions = append(sessions, SessionInfo{
+			UUID:           s.Uuid,
+			MessageCount:   len(s.Messages),
+			IsLatest:       s.Uuid == latestUUID,
+			LastModified:   fileInfo.ModTime(),
+			FirstMessage:   firstMessage,
+		})
 	}
+
+	// Sort sessions by LastModified descending
+	sort.Slice(sessions, func(i, j int) bool {
+		return sessions[i].LastModified.After(sessions[j].LastModified)
+	})
+
+	return sessions, nil
 }
 
 func InspectSession(uuid string, yml bool) {
@@ -240,9 +296,9 @@ func SwitchSession(uuid string) {
 	}
 	err = updateMetadata(uuid)
 	if err != nil {
-		fmt.Println("Could not switch sessions:", err)
-		panic(err)
+		// fmt.Println("Could not switch sessions:", err) // Quieter for TUI
+		panic(err) // This is a critical error, should probably propagate it
 	}
-	fmt.Println("Switched to session:", uuid)
+	// fmt.Println("Switched to session:", uuid) // Quieter for TUI
 	return
 }
